@@ -1,5 +1,5 @@
 {
-  "name": "@hermes/openclaw-corpus-plugin",
+  "name": "openclaw-corpus-plugin",
   "version": "1.0.0",
   "type": "module",
   "openclaw": {

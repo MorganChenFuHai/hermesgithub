@@ -1,201 +1,153 @@
 # Corpus 插件发布指南
 
-## 发布插件
+从 GitHub 发布插件到 ClawHub Registry
 
-### 完整发布命令
+## 前置条件
 
-```bash
-clawhub package publish /Users/chenfuhai/work/DaoCloud/code/hermesopenclaw/builtin-plugin/corpus --family code-plugin --source-repo https://github.com/hermesopenclaw/hermesopenclaw --source-commit $(git -C /Users/chenfuhai/work/DaoCloud/code/hermesopenclaw rev-parse HEAD) --version 1.0.0
-```
+### 方式：使用 npm
 
-### 命令参数详解
+1. **安装 ClawHub CLI**
+   ```bash
+   npm install -g clawhub
+   
+   ```
+   > 注意：此方式需要 Bun 运行环境支持
 
-#### `clawhub package publish`
-ClawHub CLI 的插件发布命令，用于将 OpenClaw 插件发布到 ClawHub  registry。
+2. **登录 ClawHub**
+   ```bash
+   clawhub login
+   ```
 
-#### `/Users/chenfuhai/work/DaoCloud/code/hermesopenclaw/builtin-plugin/corpus`
-**插件目录路径** - 指定要发布的插件源代码所在的文件夹路径。
-
-- **为什么需要**：ClawHub 需要读取插件目录中的 `package.json`、`openclaw.plugin.json` 以及编译后的 `dist/` 目录等文件
-- **路径格式**：可以使用绝对路径或相对路径
-- **目录要求**：
-  - 必须包含 `package.json` 文件
-  - 必须包含 `openclaw.plugin.json` 文件（插件配置）
-  - 建议包含编译后的 `dist/` 目录
-
-#### `--family code-plugin`
-**插件家族类型** - 指定插件的类型分类。
-
-- **为什么需要**：ClawHub 支持多种插件类型，需要明确标识
-- **可选值**：
-  - `code-plugin`：代码插件（扩展 OpenClaw 功能）
-  - `bundle-plugin`：捆绑插件
-- **为什么选 `code-plugin`**：Corpus 插件是一个标准的 OpenClaw 代码插件，提供了 RAG 搜索和 KG 搜索工具
-
-#### `--source-repo https://github.com/hermesopenclaw/hermesopenclaw`
-**源代码仓库地址** - 指定插件源代码托管的 GitHub 仓库。
-
-- **为什么需要**：
-  - 提供插件源代码的可追溯性
-  - 方便用户查看源码、提交 issue
-  - 符合开源插件的透明度要求
-- **格式要求**：
-  - 完整的 GitHub URL：`https://github.com/owner/repo`
-  - 或简写格式：`owner/repo`
-- **注意事项**：仓库应该是公开的，以便其他用户访问
-
-#### `--source-commit $(git -C /Users/chenfuhai/work/DaoCloud/code/hermesopenclaw rev-parse HEAD)`
-**源代码提交哈希** - 指定发布版本对应的 Git commit SHA。
-
-- **为什么需要**：
-  - 精确关联发布版本与源代码状态
-  - 确保可复现性和版本追溯
-  - 方便安全扫描和审计
-- **命令解析**：
-  - `git -C /Users/chenfuhai/work/DaoCloud/code/hermesopenclaw rev-parse HEAD`：获取指定仓库的当前提交哈希
-  - `-C <path>`：切换到指定目录执行 git 命令
-  - `rev-parse HEAD`：返回当前 HEAD 指向的 commit SHA
-- **替代写法**：
-  - 手动指定：`--source-commit abc123def456...`
-  - 使用标签：`--source-ref v1.0.0`
-
-#### `--version 1.0.0`
-**发布版本号** - 指定插件的发布版本。
-
-- **为什么需要**：
-  - 遵循语义化版本规范（Semantic Versioning）
-  - 管理插件的更新和兼容性
-  - 用户安装时可以指定版本
-- **格式规范**：`主版本。次版本.修订版本`（MAJOR.MINOR.PATCH）
-  - `1.0.0`：初始稳定版本
-  - `1.0.1`：Bug 修复
-  - `1.1.0`：新增功能（向后兼容）
-  - `2.0.0`：重大变更（可能不兼容）
-
-### 可选参数
-
-#### `--dry-run`
-**预演模式** - 模拟发布过程但不实际上传。
+### 构建插件
 
 ```bash
-# 示例：发布前验证配置
-clawhub package publish ./corpus --family code-plugin --source-repo https://github.com/hermesopenclaw/hermesopenclaw --source-commit $(git rev-parse HEAD) --version 1.0.0 --dry-run
+npm run build
 ```
 
-- **用途**：检查插件配置是否正确，文件是否完整
-- **建议**：正式发布前先用 `--dry-run` 验证
+## 发布步骤
 
-#### `--display-name "自定义名称"`
-**显示名称** - 覆盖 package.json 中的显示名称。
+### 1. 预演发布（推荐）
 
-#### `--changelog "更新说明"`
-**更新日志** - 添加版本更新说明。
-
-#### `--tags <tags>`
-**标签** - 为发布版本添加标签（默认：`latest`）。
+正式发布前，先验证配置：
 
 ```bash
-# 示例：添加多个标签
-clawhub package publish ./corpus --family code-plugin ... --tags "latest,stable,v1"
+clawhub package publish MorganChenFuHai/hermesgithub --dry-run
 ```
 
-### 简化命令（在插件目录下执行）
-
-如果当前已经在插件目录中，可以简化为：
+### 2. 正式发布
 
 ```bash
-cd /Users/chenfuhai/work/DaoCloud/code/hermesopenclaw/builtin-plugin/corpus
-
-# 方式 1：使用相对路径
-clawhub package publish . --family code-plugin --source-repo https://github.com/hermesopenclaw/hermesopenclaw --source-commit $(git rev-parse HEAD) --version 1.0.0
-
-# 方式 2：使用 GitHub 路径（自动检测 source-path）
-clawhub package publish . --family code-plugin --source-repo hermesopenclaw/hermesopenclaw --source-commit $(git rev-parse HEAD) --version 1.0.0
+clawhub package publish MorganChenFuHai/hermesgithub
 ```
 
----
-
-## 安装插件
-
-### 从 ClawHub 安装（推荐）
+### 3. 指定版本发布
 
 ```bash
-openclaw plugins install @hermes/openclaw-corpus-plugin
+clawhub package publish MorganChenFuHai/hermesgithub@1.0.0
 ```
 
-或
+### 4. 使用完整 URL 发布
 
 ```bash
-clawhub install @hermes/openclaw-corpus-plugin
+clawhub package publish https://github.com/MorganChenFuHai/hermesgithub
 ```
 
-### 安装指定版本
+## 命令参数说明
+
+### 基本命令格式
 
 ```bash
-openclaw plugins install @hermes/openclaw-corpus-plugin@1.0.0
+clawhub package publish <github-repo> [options]
 ```
 
-## 发布前检查清单
+### 常用参数
 
-在发布插件之前，请确保：
+| 参数 | 说明 | 示例 |
+|------|------|------|
+| 无参数 | 发布最新版本 | `clawhub package publish MorganChenFuHai/hermesgithub` |
+| `@version` | 发布指定版本 | `clawhub package publish MorganChenFuHai/hermesgithub@1.0.0` |
+| `--dry-run` | 预演模式（不实际发布） | `clawhub package publish MorganChenFuHai/hermesgithub --dry-run` |
+| `--tags` | 添加版本标签 | `clawhub package publish MorganChenFuHai/hermesgithub --tags "latest,stable"` |
 
-- [ ] 已移除所有环境访问敏感代码（如 `process.env`）
-- [ ] `package.json` 配置正确
-- [ ] `openclaw.plugin.json` 配置正确
-- [ ] 代码已编译到 `dist/` 目录
-- [ ] 运行过 `--dry-run` 验证
-- [ ] GitHub 仓库已设置为公开
-- [ ] 已登录 ClawHub（`clawhub whoami`）
-- [ ] 版本号遵循语义化规范
+## 版本管理
 
----
+### 语义化版本规范
+
+遵循 `MAJOR.MINOR.PATCH` 格式：
+
+- **MAJOR**（主版本号）：重大变更，可能不兼容
+- **MINOR**（次版本号）：新增功能，向后兼容
+- **PATCH**（修订号）：Bug 修复，向后兼容
+
+### 更新版本流程
+
+1. **更新 package.json 中的版本号**
+   ```bash
+   npm version patch  # 1.0.0 -> 1.0.1
+   npm version minor  # 1.0.0 -> 1.1.0
+   npm version major  # 1.0.0 -> 2.0.0
+   ```
+
+2. **提交并推送**
+   ```bash
+   git add .
+   git commit -m "chore: bump version to 1.0.1"
+   git push origin main
+   ```
+
+3. **创建 Git 标签**
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+4. **发布到 ClawHub**
+   ```bash
+   clawhub package publish MorganChenFuHai/hermesgithub@1.0.1
+   ```
+
+## 验证发布
+
+### 查看已发布的版本
+
+```bash
+clawhub package list MorganChenFuHai/hermesgithub
+```
+
+### 安装已发布的插件
+
+```bash
+openclaw plugins install MorganChenFuHai/hermesgithub
+```
+
+或指定版本：
+
+```bash
+openclaw plugins install MorganChenFuHai/hermesgithub@1.0.0
+```
 
 ## 常见问题
 
-### Q1: 发布时提示 "package.json required"
+### Q: 发布失败怎么办？
 
-**原因**：ClawHub 在指定目录找不到 `package.json`
+1. 检查是否已登录：`clawhub login`
+2. 检查网络连接
+3. 使用 `--dry-run` 预演模式排查问题
 
-**解决方案**：
-- 确认路径正确
-- 使用绝对路径
-- 检查 `package.json` 是否存在
+### Q: 如何更新已发布的插件？
 
-### Q2: 发布时提示 "Not logged in"
+1. 修改代码并更新版本号
+2. 提交到 GitHub 并打标签
+3. 使用新版本号重新发布
 
-**原因**：未登录 ClawHub
+### Q: 如何删除已发布的版本？
 
-**解决方案**：
 ```bash
-clawhub login
+clawhub package unpublish MorganChenFuHai/hermesgithub@1.0.0
 ```
 
-### Q3: 发布时提示权限错误 "EPERM: operation not permitted"
+## 参考链接
 
-**原因**：CLI 无法写入配置文件
-
-**解决方案**：
-```bash
-# 手动创建配置目录
-mkdir -p "~/Library/Application Support/clawhub"
-chmod 755 "~/Library/Application Support/clawhub"
-
-# 然后重新登录
-clawhub login
-```
-
-### Q4: 如何更新已发布的插件？
-
-**解决方案**：
-```bash
-# 增加版本号后重新发布
-clawhub package publish ./corpus --family code-plugin ... --version 1.0.1
-```
-
----
-
-## 参考资源
-
-- [ClawHub 官网](https://clawhub.ai/)
-- [OpenClaw 插件开发文档](https://docs.openclaw.ai/plugins/building-plugins)
+- [ClawHub 官方文档](https://clawhub.io/docs)
+- [插件开发指南](https://clawhub.io/docs/plugins)
 - [语义化版本规范](https://semver.org/)
