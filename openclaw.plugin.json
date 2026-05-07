@@ -1,0 +1,42 @@
+{
+  "id": "corpus",
+  "name": "Corpus RAG & KG Search",
+  "description": "语料库搜索与知识图谱查询工具",
+  "skills": ["skills/corpus-kg-search", "skills/corpus-rag-search"],
+  "contracts": {
+    "tools": [
+      "general-rag-search",
+      "general-kg-search"
+    ]
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "description": "语料/图谱 API 服务基础地址（必填，无尾斜杠）"
+      },
+      "apiKey": {
+        "type": "string",
+        "description": "API Key，请求头名固定为 X-API-Key（见 http.ts）"
+      },
+      "dataAuthKey": {
+        "type": "string",
+        "description": "数据鉴权密钥，请求头名固定为 dataAuthkey（见 http.ts）"
+      },
+      "generalRagCorpusIdList": {
+        "type": "string",
+        "description": "RAG 语料库 ID 列表，逗号分隔"
+      },
+      "generalKgSearchDomain": {
+        "type": "string",
+        "description": "知识图谱检索领域（单值，勿用逗号拼接多个）"
+      }
+    }
+  }
+}
